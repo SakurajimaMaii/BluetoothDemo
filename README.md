@@ -6,13 +6,13 @@
 
 开启定位权限是由于**Android 10.+**以上的要求
 
-![img](file:///C:\Users\HP\Documents\Tencent Files\1550651926\Image\C2C\AA23C8898B473C37726CE7037FFFF00A.jpg)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201126175854106.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
 
 ## 操作提示
 
 应用Demo主要提供以下几种功能：
 
-![img](file:///C:\Users\HP\Documents\Tencent Files\1550651926\Image\C2C\07EC71FD75F0E82E8A9EDCA75C69E227.jpg)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020112617591586.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
 
 - 打开可见性
 
@@ -22,9 +22,9 @@
 
   选择寻找设备会搜索附近蓝牙设备，点击设备即可配对
 
-  ![img](file:///C:\Users\HP\Documents\Tencent Files\1550651926\Image\C2C\1B7C63F997ED492D506F690431A5B46C.jpg)
+  ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201126175946631.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
 
-  ![img](file:///C:\Users\HP\Documents\Tencent Files\1550651926\Image\C2C\D920C1DBD6AA295D9797A3F949A1AA8F.jpg)
+  ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201126180009351.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
 
 - 已绑定
 
