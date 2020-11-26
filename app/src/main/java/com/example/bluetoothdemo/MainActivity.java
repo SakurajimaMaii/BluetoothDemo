@@ -27,7 +27,9 @@ import com.example.bluetoothdemo.connect.Constant;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,17 +47,18 @@ public class MainActivity extends AppCompatActivity {
     private AcceptThread mAcceptThread;
     private ConnectThread mConnectThread;
 
+    //防止蓝牙设备被重复搜索
+    private HashMap<BluetoothDevice, Integer> deviceMap = new HashMap<BluetoothDevice,Integer>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        initActionBar();
         initUI();
 
         registerBluetoothReceiver();
 
-        //软件运行时直接申请打开蓝牙
         mController.turnOnBlueTooth(this,REQUEST_CODE);
     }
 
@@ -89,11 +92,19 @@ public class MainActivity extends AppCompatActivity {
                 setProgressBarIndeterminateVisibility(false);
             }
             else if(BluetoothDevice.ACTION_FOUND.equals(action)) {
-                Toast.makeText(context,"Found",Toast.LENGTH_SHORT).show();
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //找到一个添加一个
-                mDeviceList.add(device);
-                mAdapter.notifyDataSetChanged();
+                if(device!=null){
+                    if(deviceMap.get(device) == null){
+                        deviceMap.put(device,1);
+                    }else{
+                        deviceMap.put(device,deviceMap.get(device)+1);
+                    }
+                    //当device第一次被查找到的时候
+                    if (deviceMap.get(device) == 1)
+                        mDeviceList.add(device);
+                    mAdapter.notifyDataSetChanged();
+                }
 
             } else if(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {  //此处作用待细查
                 int scanMode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, 0);
@@ -123,28 +134,18 @@ public class MainActivity extends AppCompatActivity {
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(bondDeviceClick);
     }
-//    private void initActionBar() {
-//        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-//        getActionBar().setDisplayUseLogoEnabled(false);
-//        setProgressBarIndeterminate(true);
-//        try {
-//            ViewConfiguration config = ViewConfiguration.get(this);
-//            Field menuKeyField = ViewConfiguration.class
-//                    .getDeclaredField("sHasPermanentMenuKey");
-//            if (menuKeyField != null) {
-//                menuKeyField.setAccessible(true);
-//                menuKeyField.setBoolean(config, false);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main,menu);
         return true;
     }
+
+    /**
+     * 导航栏菜单
+     * @param item MenuItem
+     * @return boolean
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -164,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.refresh(mBondedDeviceList);
             mListView.setOnItemClickListener(bondedDeviceClick);
         }
+        //开始监听
         else if( id == R.id.listening) {
             if( mAcceptThread != null) {
                 mAcceptThread.cancel();
@@ -176,16 +178,16 @@ public class MainActivity extends AppCompatActivity {
                 mAcceptThread.cancel();
             }
         }
-        else if( id == R.id.disconnect) {
-            if( mConnectThread != null) {
-                mConnectThread.cancel();
-            }
-        }
+//        else if( id == R.id.disconnect) {
+//            if( mConnectThread != null) {
+//                mConnectThread.cancel();
+//            }
+//        }
         else if( id == R.id.say_hello) {
-            say("Hello");
+            say("Hello\n");
         }
         else if( id == R.id.say_hi) {
-            say("Hi");
+            say("Hi\n");
         }
 
         return super.onOptionsItemSelected(item);
