@@ -12,20 +12,40 @@
 
 应用Demo主要提供以下几种功能：
 
-![菜单栏](https://img-blog.csdnimg.cn/2020112617591586.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
+![菜单栏](IMG/menu.jpg)
 
 - 打开可见性
 
-  使得自己的设备能够被查看到
+  **此操作是必要的**，点击菜单栏的 **打开可见** 使得自己的设备能够被查看到
 
 - 寻找设备
 
-  选择寻找设备会搜索附近蓝牙设备，点击设备即可配对
+  点击 **寻找设备** 会搜索附近蓝牙设备
 
-  ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201126175946631.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
+  ![找到的设备列表](IMG/searchDevice.jpg)
 
-  ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201126180009351.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY5OTcxNg==,size_16,color_FFFFFF,t_70#pic_center)
+  点击列表中的设备即可配对，我们以 **HC-06** 为例
+
+  ![绑定设备](IMG/bond.jpg)
+
+  绑定成功会有弹窗提示
+
+  ![绑定设备](IMG/bondSuccessful.jpg)
 
 - 已绑定
 
-  查看已绑定设备
+  点击 **已绑定** 会显示已绑定设备，我们点击已绑定设备进行连接，连接成功会有弹窗提示，我们以 **HC-06** 为例
+  
+  ![链接成功](IMG/connectSuccessful.jpg)
+
+- 发送Hello Hi
+
+  连接成功后，打开串口助手，点击App菜单栏内的 **发送Hello**，**发送Hi**，可以在串口助手看到消息
+
+  ![串口助手](IMG/serialPortAssistant.png)
+
+## 调试设备
+
+**蓝牙模块** 和 **TTL转USB**
+
+![串口助手](IMG/debug.jpg)
