@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">BluetoothDemo</string>
+    <string name="visibility">打开可见</string>
+    <string name="find_device">寻找设备</string>
+    <string name="bonded_device">已绑定</string>
+    <string name="waiting">等待连接</string>
+    <string name="stop_waiting">停止监听</string>
+    <string name="disconnect">断开</string>
+    <string name="hello">发送Hello</string>
+    <string name="hi">发送Hi</string>
+</resources>

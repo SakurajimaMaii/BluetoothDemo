@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/enable_visibility"
+        android:title="@string/visibility"
+        android:orderInCategory="1" />
+
+    <item
+        android:id="@+id/find_device"
+        android:title="@string/find_device"
+        android:orderInCategory="2" />
+
+    <item
+        android:id="@+id/bonded_device"
+        android:title="@string/bonded_device"
+        android:orderInCategory="3" />
+
+    <item
+        android:id="@+id/listening"
+        android:title="@string/waiting"
+        android:orderInCategory="4" />
+
+    <item
+        android:id="@+id/stop_listening"
+        android:title="@string/stop_waiting"
+        android:orderInCategory="5" />
+
+    <item
+        android:id="@+id/disconnect"
+        android:title="@string/disconnect"
+        android:orderInCategory="6" />
+
+    <item
+        android:id="@+id/say_hello"
+        android:title="@string/hello"
+        android:orderInCategory="7" />
+
+    <item
+        android:id="@+id/say_hi"
+        android:title="@string/hi"
+        android:orderInCategory="8" />
+</menu>
