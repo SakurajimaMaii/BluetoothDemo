@@ -10,24 +10,22 @@ import java.util.UUID;
 
 
 public class ConnectThread extends Thread {
-    private static final UUID MY_UUID = UUID.fromString(Constant.CONNECTTION_UUID);
+    private static final UUID MY_UUID = UUID.fromString(Constant.CONNECTION_UUID);
     private final BluetoothSocket mmSocket;
-    private final BluetoothDevice mmDevice;
-    private BluetoothAdapter mBluetoothAdapter;
+    private final BluetoothAdapter mBluetoothAdapter;
     private final Handler mHandler;
     private ConnectedThread mConnectedThread;
 
     public ConnectThread(BluetoothDevice device, BluetoothAdapter adapter, Handler handler) {
         // U将一个临时对象分配给mmSocket，因为mmSocket是最终的
         BluetoothSocket tmp = null;
-        mmDevice = device;
         mBluetoothAdapter = adapter;
         mHandler = handler;
         // 用BluetoothSocket连接到给定的蓝牙设备
         try {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
             tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-        } catch (IOException e) { }
+        } catch (IOException ignored) { }
         mmSocket = tmp;
     }
 
@@ -43,7 +41,7 @@ public class ConnectThread extends Thread {
             // 如果无法连接则关闭socket并退出
             try {
                 mmSocket.close();
-            } catch (IOException closeException) { }
+            } catch (IOException ignored) { }
             return;
         }
         // 在单独的线程中完成管理连接的工作
@@ -62,7 +60,7 @@ public class ConnectThread extends Thread {
     public void cancel() {
         try {
             mmSocket.close();
-        } catch (IOException e) { }
+        } catch (IOException ignored) { }
     }
 
     /**

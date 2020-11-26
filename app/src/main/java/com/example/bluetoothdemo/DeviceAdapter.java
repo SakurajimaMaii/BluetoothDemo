@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DeviceAdapter extends BaseAdapter {
     private List<BluetoothDevice> mData;
-    private Context mContext;
+    private final Context mContext;
 
     public DeviceAdapter(List<BluetoothDevice> data, Context context){
         mData = data;

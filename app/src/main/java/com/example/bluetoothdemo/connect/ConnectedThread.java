@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class ConnectedThread extends Thread {
     private final BluetoothSocket mmSocket;
@@ -24,7 +25,7 @@ public class ConnectedThread extends Thread {
         try {
             tmpIn = socket.getInputStream();
             tmpOut = socket.getOutputStream();
-        } catch (IOException e) { }
+        } catch (IOException ignored) { }
 
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
@@ -41,7 +42,7 @@ public class ConnectedThread extends Thread {
                 bytes = mmInStream.read(buffer);
                 // 将获得的bytes发送到UI层activity
                 if( bytes >0) {
-                    Message message = mHandler.obtainMessage(Constant.MSG_GOT_DATA, new String(buffer, 0, bytes, "utf-8"));
+                    Message message = mHandler.obtainMessage(Constant.MSG_GOT_DATA, new String(buffer, 0, bytes, StandardCharsets.UTF_8));
                     mHandler.sendMessage(message);
                 }
                 Log.d("GOTMSG", "message size" + bytes);
@@ -58,7 +59,7 @@ public class ConnectedThread extends Thread {
     public void write(byte[] bytes) {
         try {
             mmOutStream.write(bytes);
-        } catch (IOException e) { }
+        } catch (IOException ignored) { }
     }
 
     /**
@@ -67,6 +68,6 @@ public class ConnectedThread extends Thread {
     public void cancel() {
         try {
             mmSocket.close();
-        } catch (IOException e) { }
+        } catch (IOException ignored) { }
     }
 }

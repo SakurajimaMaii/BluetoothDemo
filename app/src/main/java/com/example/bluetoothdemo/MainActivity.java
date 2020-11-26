@@ -1,7 +1,6 @@
 package com.example.bluetoothdemo;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -20,21 +19,24 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.bluetoothdemo.connect.AcceptThread;
 import com.example.bluetoothdemo.connect.ConnectThread;
 import com.example.bluetoothdemo.connect.Constant;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE = 0;
-    private List<BluetoothDevice> mDeviceList = new ArrayList<>();
+    private final List<BluetoothDevice> mDeviceList = new ArrayList<>();
     private List<BluetoothDevice> mBondedDeviceList = new ArrayList<>();
 
-    private BlueToothController mController = new BlueToothController();
-    private Handler mUIHandler = new MyHandler();
+    private final BlueToothController mController = new BlueToothController();
+    private final Handler mUIHandler = new MyHandler();
 
     private ListView mListView;
     private DeviceAdapter mAdapter;
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //注册广播监听搜索结果
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 mDeviceList.clear();
                 mAdapter.notifyDataSetChanged();
             } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
-                //setProgressBarIndeterminateVisibility(false);
+                setProgressBarIndeterminateVisibility(false);
             }
             else if(BluetoothDevice.ACTION_FOUND.equals(action)) {
                 Toast.makeText(context,"Found",Toast.LENGTH_SHORT).show();
@@ -95,12 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
             } else if(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {  //此处作用待细查
                 int scanMode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, 0);
-                if(scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE){
-                    setProgressBarIndeterminateVisibility(true);
-                } else {
-                    setProgressBarIndeterminateVisibility(false);
-                }
-
+                setProgressBarIndeterminateVisibility(scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
             } else if(BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if(remoteDevice == null) {
@@ -196,34 +193,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void say(String word) {
         if (mAcceptThread != null) {
-            try {
-                mAcceptThread.sendData(word.getBytes("utf-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            mAcceptThread.sendData(word.getBytes(StandardCharsets.UTF_8));
         }
 
         else if( mConnectThread != null) {
-            try {
-                mConnectThread.sendData(word.getBytes("utf-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            mConnectThread.sendData(word.getBytes(StandardCharsets.UTF_8));
         }
 
     }
 
-    private AdapterView.OnItemClickListener bondDeviceClick = new AdapterView.OnItemClickListener() {
+    private final AdapterView.OnItemClickListener bondDeviceClick = new AdapterView.OnItemClickListener() {
         @TargetApi(Build.VERSION_CODES.KITKAT)
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             BluetoothDevice device = mDeviceList.get(i);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                device.createBond();
-            }
+            device.createBond();
         }
     };
-    private AdapterView.OnItemClickListener bondedDeviceClick = new AdapterView.OnItemClickListener() {
+    private final AdapterView.OnItemClickListener bondedDeviceClick = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             BluetoothDevice device = mBondedDeviceList.get(i);
@@ -235,8 +222,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private class MyHandler extends Handler {
 
+    private class MyHandler extends Handler {
         public void handleMessage(Message message) {
             super.handleMessage(message);
             switch (message.what) {
@@ -244,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                     showToast("data:" + String.valueOf(message.obj));
                     break;
                 case Constant.MSG_ERROR:
-                    showToast("error:" + String.valueOf(message.obj));
+                    showToast("error:" + message.obj);
                     break;
                 case Constant.MSG_CONNECTED_TO_SERVER:
                     showToast("连接到服务端");
@@ -257,16 +244,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //设置toast的标准格式
+    @SuppressLint("ShowToast")
     private void showToast(String text){
         if(mToast == null){
             mToast = Toast.makeText(this, text,Toast.LENGTH_SHORT);
-            mToast.show();
         }
         else {
             mToast.setText(text);
-            mToast.show();
         }
-
+        mToast.show();
     }
 
     /**
