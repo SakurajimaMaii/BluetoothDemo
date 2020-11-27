@@ -6,7 +6,7 @@
 
 ## 软件下载
 
-[app-debug.apk下载](www.baidu.com)
+[app-debug.apk下载](https://github.com/Mashiro2019/BluetoothDemo/blob/master/app-debug.apk)
 
 ## 权限设置
 
