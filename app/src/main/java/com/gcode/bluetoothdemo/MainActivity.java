@@ -1,17 +1,15 @@
-package com.example.bluetoothdemo;
+package com.gcode.bluetoothdemo;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,24 +19,23 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.bluetoothdemo.connect.AcceptThread;
-import com.example.bluetoothdemo.connect.ConnectThread;
-import com.example.bluetoothdemo.connect.Constant;
+import com.gcode.bluetoothdemo.connect.AcceptThread;
+import com.gcode.bluetoothdemo.connect.ConnectThread;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE = 0;
-    private final List<BluetoothDevice> mDeviceList = new ArrayList<>();
-    private List<BluetoothDevice> mBondedDeviceList = new ArrayList<>();
+    private final Set<BluetoothDevice> searchDeviceList = new HashSet<>();
+    private Set<BluetoothDevice> bondedDeviceList = new HashSet<>();
 
-    private final BlueToothController mController = new BlueToothController();
-    private final Handler mUIHandler = new MyHandler();
+    private final BlueToothController mController = new BlueToothController(this);
+    private MsgHandler mUIHandler;
+
 
     private ListView mListView;
     private DeviceAdapter mAdapter;
@@ -47,13 +44,14 @@ public class MainActivity extends AppCompatActivity {
     private AcceptThread mAcceptThread;
     private ConnectThread mConnectThread;
 
-    //防止蓝牙设备被重复搜索
-    private HashMap<BluetoothDevice, Integer> deviceMap = new HashMap<BluetoothDevice,Integer>();
+    private final String TAG = this.getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mUIHandler = new MsgHandler(this,Looper.myLooper());
 
         initUI();
 
@@ -80,36 +78,25 @@ public class MainActivity extends AppCompatActivity {
 
     //注册广播监听搜索结果
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
-                //setProgressBarIndeterminateVisibility(true);
                 //初始化数据列表
-                mDeviceList.clear();
+                searchDeviceList.clear();
                 mAdapter.notifyDataSetChanged();
-            } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
-                setProgressBarIndeterminateVisibility(false);
+            }
+            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+                Log.i(TAG,"ACTION_DISCOVERY_FINISHED");
             }
             else if(BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //找到一个添加一个
-                if(device!=null){
-                    if(deviceMap.get(device) == null){
-                        deviceMap.put(device,1);
-                    }else{
-                        deviceMap.put(device,deviceMap.get(device)+1);
-                    }
-                    //当device第一次被查找到的时候
-                    if (deviceMap.get(device) == 1)
-                        mDeviceList.add(device);
+                if(device!=null&&!bondedDeviceList.contains(device)){
+                    searchDeviceList.add(device);
                     mAdapter.notifyDataSetChanged();
                 }
-
-            } else if(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {  //此处作用待细查
-                int scanMode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, 0);
-                setProgressBarIndeterminateVisibility(scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-            } else if(BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+            }
+            else if(BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if(remoteDevice == null) {
                     showToast("无设备");
@@ -130,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
     //初始化用户界面
     private void initUI() {
         mListView = findViewById(R.id.device_list);
-        mAdapter = new DeviceAdapter(mDeviceList, this);
+        mAdapter = new DeviceAdapter(searchDeviceList, this);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(bondDeviceClick);
     }
@@ -151,18 +138,18 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.enable_visibility) {
-            mController.enableVisibily(this);
+            mController.enableVisibility(300);
         }
         //查找设备
         else if (id == R.id.find_device) {
-            mAdapter.refresh(mDeviceList);
+            mAdapter.refresh(searchDeviceList);
             mController.findDevice(this);
             mListView.setOnItemClickListener(bondDeviceClick);
         }
         //查看已绑定设备
         else if (id == R.id.bonded_device) {
-            mBondedDeviceList = mController.getBondedDeviceList();
-            mAdapter.refresh(mBondedDeviceList);
+            bondedDeviceList = mController.getBondedDeviceList();
+            mAdapter.refresh(bondedDeviceList);
             mListView.setOnItemClickListener(bondedDeviceClick);
         }
         //开始监听
@@ -170,19 +157,21 @@ public class MainActivity extends AppCompatActivity {
             if( mAcceptThread != null) {
                 mAcceptThread.cancel();
             }
-            mAcceptThread = new AcceptThread(mController.getAdapter(), mUIHandler);
-            mAcceptThread.start();
+            if(mController.getAdapter()!=null){
+                mAcceptThread = new AcceptThread(mController.getAdapter(), mUIHandler);
+                mAcceptThread.start();
+            }
         }
         else if( id == R.id.stop_listening) {
             if( mAcceptThread != null) {
                 mAcceptThread.cancel();
             }
         }
-//        else if( id == R.id.disconnect) {
-//            if( mConnectThread != null) {
-//                mConnectThread.cancel();
-//            }
-//        }
+        else if( id == R.id.disconnect) {
+            if( mConnectThread != null) {
+                mConnectThread.cancel();
+            }
+        }
         else if( id == R.id.say_hello) {
             say("Hello\n");
         }
@@ -204,18 +193,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private final AdapterView.OnItemClickListener bondDeviceClick = new AdapterView.OnItemClickListener() {
-        @TargetApi(Build.VERSION_CODES.KITKAT)
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            BluetoothDevice device = mDeviceList.get(i);
-            device.createBond();
-        }
+    private final AdapterView.OnItemClickListener bondDeviceClick = (adapterView, view, i, l) -> {
+        BluetoothDevice device = new ArrayList<>(searchDeviceList).get(i);
+        device.createBond();
     };
+
     private final AdapterView.OnItemClickListener bondedDeviceClick = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            BluetoothDevice device = mBondedDeviceList.get(i);
+            BluetoothDevice device = new ArrayList<>(bondedDeviceList).get(i);
             if (mConnectThread != null) {
                 mConnectThread.cancel();
             }
@@ -223,27 +209,6 @@ public class MainActivity extends AppCompatActivity {
             mConnectThread.start();
         }
     };
-
-
-    private class MyHandler extends Handler {
-        public void handleMessage(Message message) {
-            super.handleMessage(message);
-            switch (message.what) {
-                case Constant.MSG_GOT_DATA:
-                    showToast("data:" + String.valueOf(message.obj));
-                    break;
-                case Constant.MSG_ERROR:
-                    showToast("error:" + message.obj);
-                    break;
-                case Constant.MSG_CONNECTED_TO_SERVER:
-                    showToast("连接到服务端");
-                    break;
-                case Constant.MSG_GOT_A_CLINET:
-                    showToast("找到服务端");
-                    break;
-            }
-        }
-    }
 
     //设置toast的标准格式
     @SuppressLint("ShowToast")

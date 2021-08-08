@@ -1,9 +1,13 @@
-package com.example.bluetoothdemo.connect;
+package com.gcode.bluetoothdemo.connect;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import com.gcode.bluetoothdemo.MsgHandler;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -16,17 +20,19 @@ public class AcceptThread extends Thread {
     private static final UUID MY_UUID = UUID.fromString(Constant.CONNECTION_UUID);
 
     private final BluetoothServerSocket mmServerSocket;
-    private final Handler mHandler;
+    private final MsgHandler msgHandler;
     private ConnectedThread mConnectedThread;
 
-    public AcceptThread(BluetoothAdapter adapter, Handler handler) {
+    public AcceptThread(@NonNull BluetoothAdapter adapter, @NonNull MsgHandler handler) {
+        msgHandler = handler;
         // 使用一个临时对象，该对象稍后被分配给mmServerSocket，因为mmServerSocket是最终的
-        mHandler = handler;
         BluetoothServerSocket tmp = null;
         try {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
             tmp = adapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
-        } catch (IOException ignored) { }
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Socket's listen() method failed", e);
+        }
         mmServerSocket = tmp;
     }
 
@@ -35,10 +41,11 @@ public class AcceptThread extends Thread {
         //持续监听，直到出现异常或返回socket
         while (true) {
             try {
-                mHandler.sendEmptyMessage(Constant.MSG_START_LISTENING);
+                msgHandler.sendEmptyMessage(Constant.MSG_START_LISTENING);
                 socket = mmServerSocket.accept();
             } catch (IOException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(Constant.MSG_ERROR, e));
+                msgHandler.sendMessage(msgHandler.obtainMessage(Constant.MSG_ERROR, e));
+                Log.e(this.getClass().getSimpleName(), "Socket's accept() method failed", e);
                 break;
             }
             // 如果一个连接被接受
@@ -47,9 +54,9 @@ public class AcceptThread extends Thread {
                 manageConnectedSocket(socket);
                 try {
                     mmServerSocket.close();
-                    mHandler.sendEmptyMessage(Constant.MSG_FINISH_LISTENING);
+                    msgHandler.sendEmptyMessage(Constant.MSG_FINISH_LISTENING);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(this.getClass().getSimpleName(), "Socket's close() method failed", e);
                 }
                 break;
             }
@@ -61,8 +68,8 @@ public class AcceptThread extends Thread {
         if( mConnectedThread != null) {
             mConnectedThread.cancel();
         }
-        mHandler.sendEmptyMessage(Constant.MSG_GOT_A_CLINET);
-        mConnectedThread = new ConnectedThread(socket, mHandler);
+        msgHandler.sendEmptyMessage(Constant.MSG_GOT_A_CLIENT);
+        mConnectedThread = new ConnectedThread(socket, msgHandler);
         mConnectedThread.start();
     }
 
@@ -72,8 +79,10 @@ public class AcceptThread extends Thread {
     public void cancel() {
         try {
             mmServerSocket.close();
-            mHandler.sendEmptyMessage(Constant.MSG_FINISH_LISTENING);
-        } catch (IOException ignored) { }
+            msgHandler.sendEmptyMessage(Constant.MSG_FINISH_LISTENING);
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Could not close the connect socket", e);
+        }
     }
 
     public void sendData(byte[] data) {

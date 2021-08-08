@@ -25,10 +25,10 @@
         android:title="@string/stop_waiting"
         android:orderInCategory="5" />
 
-<!--    <item-->
-<!--        android:id="@+id/disconnect"-->
-<!--        android:title="@string/disconnect"-->
-<!--        android:orderInCategory="6" />-->
+    <item
+        android:id="@+id/disconnect"
+        android:title="@string/disconnect"
+        android:orderInCategory="6" />
 
     <item
         android:id="@+id/say_hello"

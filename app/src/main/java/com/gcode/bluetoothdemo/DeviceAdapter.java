@@ -1,4 +1,4 @@
-package com.example.bluetoothdemo;
+package com.gcode.bluetoothdemo;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -9,14 +9,16 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DeviceAdapter extends BaseAdapter {
     private List<BluetoothDevice> mData;
     private final Context mContext;
 
-    public DeviceAdapter(List<BluetoothDevice> data, Context context){
-        mData = data;
+    public DeviceAdapter(Set<BluetoothDevice> data, Context context){
+        mData = new ArrayList<>(data);
         mContext = context.getApplicationContext();
     }
 
@@ -62,8 +64,8 @@ public class DeviceAdapter extends BaseAdapter {
     }
 
     //刷新列表，防止搜索结果重复出现
-    public void refresh(List<BluetoothDevice> data){
-        mData = data;
+    public void refresh(Set<BluetoothDevice> data){
+        mData = new ArrayList<>(data);
         notifyDataSetChanged();
     }
 

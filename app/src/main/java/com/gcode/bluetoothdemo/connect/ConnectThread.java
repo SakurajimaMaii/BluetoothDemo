@@ -1,9 +1,11 @@
-package com.example.bluetoothdemo.connect;
+package com.gcode.bluetoothdemo.connect;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
+import android.util.Log;
+
+import com.gcode.bluetoothdemo.MsgHandler;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -13,19 +15,21 @@ public class ConnectThread extends Thread {
     private static final UUID MY_UUID = UUID.fromString(Constant.CONNECTION_UUID);
     private final BluetoothSocket mmSocket;
     private final BluetoothAdapter mBluetoothAdapter;
-    private final Handler mHandler;
+    private final MsgHandler mHandler;
     private ConnectedThread mConnectedThread;
 
-    public ConnectThread(BluetoothDevice device, BluetoothAdapter adapter, Handler handler) {
+    public ConnectThread(BluetoothDevice device, BluetoothAdapter bluetoothAdapter, MsgHandler handler) {
         // U将一个临时对象分配给mmSocket，因为mmSocket是最终的
         BluetoothSocket tmp = null;
-        mBluetoothAdapter = adapter;
+        mBluetoothAdapter = bluetoothAdapter;
         mHandler = handler;
         // 用BluetoothSocket连接到给定的蓝牙设备
         try {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
             tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-        } catch (IOException ignored) { }
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Socket's create() method failed", e);
+        }
         mmSocket = tmp;
     }
 
@@ -41,7 +45,9 @@ public class ConnectThread extends Thread {
             // 如果无法连接则关闭socket并退出
             try {
                 mmSocket.close();
-            } catch (IOException ignored) { }
+            } catch (IOException e) {
+                Log.e(this.getClass().getSimpleName(), "Could not close the client socket", e);
+            }
             return;
         }
         // 在单独的线程中完成管理连接的工作
@@ -60,7 +66,9 @@ public class ConnectThread extends Thread {
     public void cancel() {
         try {
             mmSocket.close();
-        } catch (IOException ignored) { }
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Could not close the client socket", e);
+        }
     }
 
     /**

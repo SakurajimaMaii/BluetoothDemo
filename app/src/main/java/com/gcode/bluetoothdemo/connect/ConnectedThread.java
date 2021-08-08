@@ -1,9 +1,10 @@
-package com.example.bluetoothdemo.connect;
+package com.gcode.bluetoothdemo.connect;
 
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.gcode.bluetoothdemo.MsgHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,9 +15,11 @@ public class ConnectedThread extends Thread {
     private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
-    private final Handler mHandler;
+    private final MsgHandler mHandler;
 
-    public ConnectedThread(BluetoothSocket socket, Handler handler) {
+    private final String TAG = this.getClass().getSimpleName();
+
+    public ConnectedThread(BluetoothSocket socket, MsgHandler handler) {
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
@@ -24,8 +27,15 @@ public class ConnectedThread extends Thread {
         // 使用临时对象获取输入和输出流，因为成员流是最终的
         try {
             tmpIn = socket.getInputStream();
+        } catch (IOException e) {
+            Log.e(TAG, "Error occurred when creating input stream", e);
+        }
+
+        try {
             tmpOut = socket.getOutputStream();
-        } catch (IOException ignored) { }
+        } catch (IOException e) {
+            Log.e(TAG, "Error occurred when creating output stream", e);
+        }
 
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
@@ -41,13 +51,14 @@ public class ConnectedThread extends Thread {
                 // 从InputStream读取数据
                 bytes = mmInStream.read(buffer);
                 // 将获得的bytes发送到UI层activity
-                if( bytes >0) {
+                if (bytes > 0) {
                     Message message = mHandler.obtainMessage(Constant.MSG_GOT_DATA, new String(buffer, 0, bytes, StandardCharsets.UTF_8));
                     mHandler.sendMessage(message);
                 }
-                Log.d("GOTMSG", "message size" + bytes);
+                Log.d(TAG, "message size" + bytes);
             } catch (IOException e) {
                 mHandler.sendMessage(mHandler.obtainMessage(Constant.MSG_ERROR, e));
+                Log.d(TAG, "Input stream was disconnected", e);
                 break;
             }
         }
@@ -59,7 +70,9 @@ public class ConnectedThread extends Thread {
     public void write(byte[] bytes) {
         try {
             mmOutStream.write(bytes);
-        } catch (IOException ignored) { }
+        } catch (IOException e) {
+            Log.e(TAG, "Error occurred when sending data", e);
+        }
     }
 
     /**
@@ -68,6 +81,8 @@ public class ConnectedThread extends Thread {
     public void cancel() {
         try {
             mmSocket.close();
-        } catch (IOException ignored) { }
+        } catch (IOException e) {
+            Log.e(TAG, "Could not close the connect socket", e);
+        }
     }
 }

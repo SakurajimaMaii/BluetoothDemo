@@ -4,7 +4,7 @@
 
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="com.gcode.bluetoothdemo.MainActivity">
 
     <ListView
         android:id="@+id/device_list"
