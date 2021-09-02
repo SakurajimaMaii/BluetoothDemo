@@ -9,6 +9,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.IntRange;
+
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,8 +32,11 @@ public class DeviceAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return mData.get(i);
+    public @Nullable Object getItem(@IntRange(from = 0) int index) {
+        if(index<0||index>=getCount()){
+            throw new IllegalArgumentException("index is not in the range of the array index");
+        }
+        return mData.get(index);
     }
 
     @Override
@@ -56,6 +63,7 @@ public class DeviceAdapter extends BaseAdapter {
         BluetoothDevice device = (BluetoothDevice) getItem(i);
 
         //显示设备名称
+        assert device != null;
         line1.setText(device.getName());
         //显示设备地址
         line2.setText(device.getAddress());

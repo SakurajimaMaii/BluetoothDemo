@@ -18,6 +18,8 @@ public class ConnectThread extends Thread {
     private final MsgHandler mHandler;
     private ConnectedThread mConnectedThread;
 
+    private final String tag = this.getClass().getSimpleName();
+
     public ConnectThread(BluetoothDevice device, BluetoothAdapter bluetoothAdapter, MsgHandler handler) {
         // U将一个临时对象分配给mmSocket，因为mmSocket是最终的
         BluetoothSocket tmp = null;
@@ -28,7 +30,7 @@ public class ConnectThread extends Thread {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
             tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Socket's create() method failed", e);
+            Log.e(tag, "Socket's create() method failed", e);
         }
         mmSocket = tmp;
     }
@@ -46,7 +48,7 @@ public class ConnectThread extends Thread {
             try {
                 mmSocket.close();
             } catch (IOException e) {
-                Log.e(this.getClass().getSimpleName(), "Could not close the client socket", e);
+                Log.e(tag, "Could not close the client socket", e);
             }
             return;
         }
@@ -67,7 +69,7 @@ public class ConnectThread extends Thread {
         try {
             mmSocket.close();
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Could not close the client socket", e);
+            Log.e(tag, "Could not close the client socket", e);
         }
     }
 

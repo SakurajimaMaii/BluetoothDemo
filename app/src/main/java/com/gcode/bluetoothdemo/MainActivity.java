@@ -1,6 +1,5 @@
 package com.gcode.bluetoothdemo;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -15,12 +14,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.gcode.bluetoothdemo.connect.AcceptThread;
 import com.gcode.bluetoothdemo.connect.ConnectThread;
+import com.gcode.tools.utils.MsgWindowUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,28 +38,29 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView mListView;
     private DeviceAdapter mAdapter;
-    private Toast mToast;
 
     private AcceptThread mAcceptThread;
     private ConnectThread mConnectThread;
 
     private final String TAG = this.getClass().getSimpleName();
 
+    private final Context mContext = getApplicationContext();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mUIHandler = new MsgHandler(this,Looper.myLooper());
+        mUIHandler = new MsgHandler(this, Looper.myLooper());
 
         initUI();
 
         registerBluetoothReceiver();
 
-        mController.turnOnBlueTooth(this,REQUEST_CODE);
+        mController.turnOnBlueTooth(this, REQUEST_CODE);
     }
 
-    private void registerBluetoothReceiver(){
+    private void registerBluetoothReceiver() {
         IntentFilter filter = new IntentFilter();
         //开始查找
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -80,35 +80,32 @@ public class MainActivity extends AppCompatActivity {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 //初始化数据列表
                 searchDeviceList.clear();
                 mAdapter.notifyDataSetChanged();
-            }
-            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
-                Log.i(TAG,"ACTION_DISCOVERY_FINISHED");
-            }
-            else if(BluetoothDevice.ACTION_FOUND.equals(action)) {
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Log.i(TAG, "ACTION_DISCOVERY_FINISHED");
+            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //找到一个添加一个
-                if(device!=null&&!bondedDeviceList.contains(device)){
+                if (device != null && !bondedDeviceList.contains(device)) {
                     searchDeviceList.add(device);
                     mAdapter.notifyDataSetChanged();
                 }
-            }
-            else if(BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if(remoteDevice == null) {
-                    showToast("无设备");
+                if (remoteDevice == null) {
+                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "无设备");
                     return;
                 }
                 int status = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, 0);
-                if(status == BluetoothDevice.BOND_BONDED) {
-                    showToast("已绑定" + remoteDevice.getName());
-                } else if(status == BluetoothDevice.BOND_BONDING) {
-                    showToast("正在绑定" + remoteDevice.getName());
-                } else if(status == BluetoothDevice.BOND_NONE) {
-                    showToast("未绑定" + remoteDevice.getName());
+                if (status == BluetoothDevice.BOND_BONDED) {
+                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "已绑定" + remoteDevice.getName());
+                } else if (status == BluetoothDevice.BOND_BONDING) {
+                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "正在绑定" + remoteDevice.getName());
+                } else if (status == BluetoothDevice.BOND_NONE) {
+                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "未绑定" + remoteDevice.getName());
                 }
             }
         }
@@ -124,13 +121,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main,menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     /**
      * 导航栏菜单
+     *
      * @param item MenuItem
+     *
      * @return boolean
      */
     @Override
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         //查找设备
         else if (id == R.id.find_device) {
             mAdapter.refresh(searchDeviceList);
-            mController.findDevice(this);
+            mController.findDevice();
             mListView.setOnItemClickListener(bondDeviceClick);
         }
         //查看已绑定设备
@@ -153,29 +152,25 @@ public class MainActivity extends AppCompatActivity {
             mListView.setOnItemClickListener(bondedDeviceClick);
         }
         //开始监听
-        else if( id == R.id.listening) {
-            if( mAcceptThread != null) {
+        else if (id == R.id.listening) {
+            if (mAcceptThread != null) {
                 mAcceptThread.cancel();
             }
-            if(mController.getAdapter()!=null){
+            if (mController.getAdapter() != null) {
                 mAcceptThread = new AcceptThread(mController.getAdapter(), mUIHandler);
                 mAcceptThread.start();
             }
-        }
-        else if( id == R.id.stop_listening) {
-            if( mAcceptThread != null) {
+        } else if (id == R.id.stop_listening) {
+            if (mAcceptThread != null) {
                 mAcceptThread.cancel();
             }
-        }
-        else if( id == R.id.disconnect) {
-            if( mConnectThread != null) {
+        } else if (id == R.id.disconnect) {
+            if (mConnectThread != null) {
                 mConnectThread.cancel();
             }
-        }
-        else if( id == R.id.say_hello) {
+        } else if (id == R.id.say_hello) {
             say("Hello\n");
-        }
-        else if( id == R.id.say_hi) {
+        } else if (id == R.id.say_hi) {
             say("Hi\n");
         }
 
@@ -185,12 +180,9 @@ public class MainActivity extends AppCompatActivity {
     private void say(String word) {
         if (mAcceptThread != null) {
             mAcceptThread.sendData(word.getBytes(StandardCharsets.UTF_8));
-        }
-
-        else if( mConnectThread != null) {
+        } else if (mConnectThread != null) {
             mConnectThread.sendData(word.getBytes(StandardCharsets.UTF_8));
         }
-
     }
 
     private final AdapterView.OnItemClickListener bondDeviceClick = (adapterView, view, i, l) -> {
@@ -209,18 +201,6 @@ public class MainActivity extends AppCompatActivity {
             mConnectThread.start();
         }
     };
-
-    //设置toast的标准格式
-    @SuppressLint("ShowToast")
-    private void showToast(String text){
-        if(mToast == null){
-            mToast = Toast.makeText(this, text,Toast.LENGTH_SHORT);
-        }
-        else {
-            mToast.setText(text);
-        }
-        mToast.show();
-    }
 
     /**
      * 退出时注销广播、注销连接过程、注销等待连接的监听

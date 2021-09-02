@@ -17,7 +17,7 @@ public class ConnectedThread extends Thread {
     private final OutputStream mmOutStream;
     private final MsgHandler mHandler;
 
-    private final String TAG = this.getClass().getSimpleName();
+    private final String tag = this.getClass().getSimpleName();
 
     public ConnectedThread(BluetoothSocket socket, MsgHandler handler) {
         mmSocket = socket;
@@ -28,13 +28,13 @@ public class ConnectedThread extends Thread {
         try {
             tmpIn = socket.getInputStream();
         } catch (IOException e) {
-            Log.e(TAG, "Error occurred when creating input stream", e);
+            Log.e(tag, "Error occurred when creating input stream", e);
         }
 
         try {
             tmpOut = socket.getOutputStream();
         } catch (IOException e) {
-            Log.e(TAG, "Error occurred when creating output stream", e);
+            Log.e(tag, "Error occurred when creating output stream", e);
         }
 
         mmInStream = tmpIn;
@@ -55,10 +55,10 @@ public class ConnectedThread extends Thread {
                     Message message = mHandler.obtainMessage(Constant.MSG_GOT_DATA, new String(buffer, 0, bytes, StandardCharsets.UTF_8));
                     mHandler.sendMessage(message);
                 }
-                Log.d(TAG, "message size" + bytes);
+                Log.d(tag, "message size" + bytes);
             } catch (IOException e) {
                 mHandler.sendMessage(mHandler.obtainMessage(Constant.MSG_ERROR, e));
-                Log.d(TAG, "Input stream was disconnected", e);
+                Log.d(tag, "Input stream was disconnected", e);
                 break;
             }
         }
@@ -71,7 +71,7 @@ public class ConnectedThread extends Thread {
         try {
             mmOutStream.write(bytes);
         } catch (IOException e) {
-            Log.e(TAG, "Error occurred when sending data", e);
+            Log.e(tag, "Error occurred when sending data", e);
         }
     }
 
@@ -82,7 +82,7 @@ public class ConnectedThread extends Thread {
         try {
             mmSocket.close();
         } catch (IOException e) {
-            Log.e(TAG, "Could not close the connect socket", e);
+            Log.e(tag, "Could not close the connect socket", e);
         }
     }
 }

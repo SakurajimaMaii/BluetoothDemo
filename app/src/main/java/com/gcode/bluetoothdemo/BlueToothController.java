@@ -5,15 +5,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 class BlueToothController {
@@ -77,11 +74,9 @@ class BlueToothController {
     /**
      * 查找设备
      */
-    public void findDevice(Context context) {
+    public void findDevice() {
         assert (bluetoothAdapter != null);
         bluetoothAdapter.startDiscovery();
-        String res = (bluetoothAdapter.startDiscovery()) ? "true" : "false";
-        Log.d("ghyTest", res);
     }
 
     /**

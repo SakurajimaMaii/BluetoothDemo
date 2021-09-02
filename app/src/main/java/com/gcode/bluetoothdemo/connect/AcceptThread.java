@@ -23,6 +23,8 @@ public class AcceptThread extends Thread {
     private final MsgHandler msgHandler;
     private ConnectedThread mConnectedThread;
 
+    private final String tag = this.getClass().getSimpleName();
+
     public AcceptThread(@NonNull BluetoothAdapter adapter, @NonNull MsgHandler handler) {
         msgHandler = handler;
         // 使用一个临时对象，该对象稍后被分配给mmServerSocket，因为mmServerSocket是最终的
@@ -31,7 +33,7 @@ public class AcceptThread extends Thread {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
             tmp = adapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Socket's listen() method failed", e);
+            Log.e(tag, "Socket's listen() method failed", e);
         }
         mmServerSocket = tmp;
     }
@@ -45,7 +47,7 @@ public class AcceptThread extends Thread {
                 socket = mmServerSocket.accept();
             } catch (IOException e) {
                 msgHandler.sendMessage(msgHandler.obtainMessage(Constant.MSG_ERROR, e));
-                Log.e(this.getClass().getSimpleName(), "Socket's accept() method failed", e);
+                Log.e(tag, "Socket's accept() method failed", e);
                 break;
             }
             // 如果一个连接被接受
@@ -56,7 +58,7 @@ public class AcceptThread extends Thread {
                     mmServerSocket.close();
                     msgHandler.sendEmptyMessage(Constant.MSG_FINISH_LISTENING);
                 } catch (IOException e) {
-                    Log.e(this.getClass().getSimpleName(), "Socket's close() method failed", e);
+                    Log.e(tag, "Socket's close() method failed", e);
                 }
                 break;
             }
@@ -81,7 +83,7 @@ public class AcceptThread extends Thread {
             mmServerSocket.close();
             msgHandler.sendEmptyMessage(Constant.MSG_FINISH_LISTENING);
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Could not close the connect socket", e);
+            Log.e(tag, "Could not close the connect socket", e);
         }
     }
 
