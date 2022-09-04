@@ -4,10 +4,6 @@
 
 本App基于**蓝牙2.0**开发,还请注意,本教程演示手机型号 **XIAOMI 8**
 
-## 软件下载
-
-[app-debug.apk下载](https://github.com/Mashiro2019/BluetoothDemo/blob/master/app-debug.apk)
-
 ## ❗ 权限设置
 
 需要开启**蓝牙权限**和**定位权限**
