@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BluetoothDemo</string>
+    <string name="app_name">Bluetooth</string>
     <string name="visibility">打开可见</string>
     <string name="find_device">寻找设备</string>
     <string name="bonded_device">已绑定</string>

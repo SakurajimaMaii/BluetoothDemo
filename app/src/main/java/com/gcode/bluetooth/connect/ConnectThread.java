@@ -1,11 +1,17 @@
-package com.gcode.bluetoothdemo.connect;
+package com.gcode.bluetooth.connect;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
-import com.gcode.bluetoothdemo.MsgHandler;
+import androidx.core.app.ActivityCompat;
+
+import com.gcode.bluetooth.MsgHandler;
+import com.gcode.vasttools.helper.ContextHelper;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -28,13 +34,16 @@ public class ConnectThread extends Thread {
         // 用BluetoothSocket连接到给定的蓝牙设备
         try {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
-            tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+            if (ActivityCompat.checkSelfPermission(ContextHelper.INSTANCE.getAppContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+            }
         } catch (IOException e) {
             Log.e(tag, "Socket's create() method failed", e);
         }
         mmSocket = tmp;
     }
 
+    @SuppressLint("MissingPermission")
     public void run() {
         // 搜索占用资源大，关掉提高速度
         mBluetoothAdapter.cancelDiscovery();

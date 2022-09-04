@@ -1,5 +1,6 @@
-package com.gcode.bluetoothdemo;
+package com.gcode.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.graphics.Color;
@@ -44,6 +45,7 @@ public class DeviceAdapter extends BaseAdapter {
         return i;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         View itemView = view;

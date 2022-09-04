@@ -1,4 +1,4 @@
-package com.gcode.bluetoothdemo.connect;
+package com.gcode.bluetooth.connect;
 
 import java.util.UUID;
 

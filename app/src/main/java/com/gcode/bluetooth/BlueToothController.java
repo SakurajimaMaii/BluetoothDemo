@@ -1,5 +1,6 @@
-package com.gcode.bluetoothdemo;
+package com.gcode.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -48,6 +49,7 @@ class BlueToothController {
      * @param activity    Activity
      * @param requestCode int 局部定义的整型数（必须大于 0）。系统会以 onActivityResult() 实现中的 requestCode 参数形式，向您传回该常量。
      */
+    @SuppressLint("MissingPermission")
     public void turnOnBlueTooth(Activity activity, @IntRange(from = 0) int requestCode) {
         if (!bluetoothAdapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -65,6 +67,7 @@ class BlueToothController {
      * 则设备将始终处于可检测到模式。此配置安全性低，因而非常不建议使用。<p/>
      * @param duration int
      */
+    @SuppressLint("MissingPermission")
     public void enableVisibility(@IntRange(from = 0) int duration) {
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
@@ -74,6 +77,7 @@ class BlueToothController {
     /**
      * 查找设备
      */
+    @SuppressLint("MissingPermission")
     public void findDevice() {
         assert (bluetoothAdapter != null);
         bluetoothAdapter.startDiscovery();
@@ -83,6 +87,7 @@ class BlueToothController {
      * 获取绑定的设备
      * @return Set<BluetoothDevice>
      */
+    @SuppressLint("MissingPermission")
     public Set<BluetoothDevice> getBondedDeviceList() {
         return bluetoothAdapter.getBondedDevices();
     }

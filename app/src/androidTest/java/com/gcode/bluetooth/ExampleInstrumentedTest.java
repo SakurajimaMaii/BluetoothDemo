@@ -1,4 +1,4 @@
-package com.example.bluetoothdemo;
+package com.gcode.bluetooth;
 
 import android.content.Context;
 

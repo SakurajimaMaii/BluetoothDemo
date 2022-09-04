@@ -1,10 +1,10 @@
-package com.gcode.bluetoothdemo.connect;
+package com.gcode.bluetooth.connect;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Message;
 import android.util.Log;
 
-import com.gcode.bluetoothdemo.MsgHandler;
+import com.gcode.bluetooth.MsgHandler;
 
 import java.io.IOException;
 import java.io.InputStream;

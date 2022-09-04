@@ -1,32 +1,42 @@
-package com.gcode.bluetoothdemo;
+package com.gcode.bluetooth;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
-import com.gcode.bluetoothdemo.connect.AcceptThread;
-import com.gcode.bluetoothdemo.connect.ConnectThread;
-import com.gcode.tools.utils.MsgWindowUtils;
+import com.gcode.bluetooth.connect.AcceptThread;
+import com.gcode.bluetooth.connect.ConnectThread;
+import com.gcode.bluetooth.databinding.ActivityMainBinding;
+import com.gcode.vasttools.activity.VastVbActivity;
+import com.gcode.vasttools.utils.LogUtils;
+import com.gcode.vasttools.utils.ToastUtils;
+import com.permissionx.guolindev.PermissionX;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends VastVbActivity<ActivityMainBinding> {
 
     public static final int REQUEST_CODE = 0;
     private final Set<BluetoothDevice> searchDeviceList = new HashSet<>();
@@ -42,22 +52,51 @@ public class MainActivity extends AppCompatActivity {
     private AcceptThread mAcceptThread;
     private ConnectThread mConnectThread;
 
-    private final String TAG = this.getClass().getSimpleName();
-
-    private final Context mContext = getApplicationContext();
+    private final String tag = this.getClass().getSimpleName();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+    public void initView(Bundle savedInstanceState) {
         mUIHandler = new MsgHandler(this, Looper.myLooper());
 
+        initPermission();
         initUI();
 
         registerBluetoothReceiver();
 
         mController.turnOnBlueTooth(this, REQUEST_CODE);
+    }
+
+    /**
+     * 初始化权限
+     */
+    private void initPermission() {
+
+        List<String> permissions;
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            permissions = new ArrayList<>(Arrays.asList(
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            ));
+        } else {
+            permissions = new ArrayList<>(Arrays.asList(
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.BLUETOOTH_ADVERTISE
+            ));
+        }
+
+        PermissionX.init(this).permissions(permissions).request((allGranted, grantedList, deniedList) -> {
+            if (allGranted) {
+                LogUtils.INSTANCE.i(tag, "所有权限已经授权");
+            } else {
+                ActivityCompat.requestPermissions(this, permissions.toArray(new String[0]), 0x01);
+            }
+        });
     }
 
     private void registerBluetoothReceiver() {
@@ -85,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 searchDeviceList.clear();
                 mAdapter.notifyDataSetChanged();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.i(TAG, "ACTION_DISCOVERY_FINISHED");
+                LogUtils.INSTANCE.i(tag, "ACTION_DISCOVERY_FINISHED");
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //找到一个添加一个
@@ -96,16 +135,23 @@ public class MainActivity extends AppCompatActivity {
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (remoteDevice == null) {
-                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "无设备");
+                    ToastUtils.showShortMsg(mContext, "无设备");
                     return;
                 }
                 int status = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, 0);
                 if (status == BluetoothDevice.BOND_BONDED) {
-                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "已绑定" + remoteDevice.getName());
+                    // 对于权限进行了适配
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 0x01);
+                            return;
+                        }
+                    }
+                    ToastUtils.showShortMsg(mContext, "已绑定" + remoteDevice.getName());
                 } else if (status == BluetoothDevice.BOND_BONDING) {
-                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "正在绑定" + remoteDevice.getName());
+                    ToastUtils.showShortMsg(mContext, "正在绑定" + remoteDevice.getName());
                 } else if (status == BluetoothDevice.BOND_NONE) {
-                    MsgWindowUtils.INSTANCE.showShortMsg(mContext, "未绑定" + remoteDevice.getName());
+                    ToastUtils.showShortMsg(mContext, "未绑定" + remoteDevice.getName());
                 }
             }
         }
@@ -113,14 +159,16 @@ public class MainActivity extends AppCompatActivity {
 
     //初始化用户界面
     private void initUI() {
+
         mListView = findViewById(R.id.device_list);
         mAdapter = new DeviceAdapter(searchDeviceList, this);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(bondDeviceClick);
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -185,9 +233,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private final AdapterView.OnItemClickListener bondDeviceClick = (adapterView, view, i, l) -> {
         BluetoothDevice device = new ArrayList<>(searchDeviceList).get(i);
-        device.createBond();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT)) {
+                ToastUtils.showShortMsg(mContext,"需要蓝牙链接权限");
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 0X02);
+            }
+        }else{
+            device.createBond();
+        }
     };
 
     private final AdapterView.OnItemClickListener bondedDeviceClick = new AdapterView.OnItemClickListener() {
@@ -216,5 +273,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 0x02){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                ToastUtils.showShortMsg(mContext,"权限已经被授予");
+            }
+        }
     }
 }

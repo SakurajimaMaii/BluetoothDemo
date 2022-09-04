@@ -1,13 +1,18 @@
-package com.gcode.bluetoothdemo.connect;
+package com.gcode.bluetooth.connect;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
-import com.gcode.bluetoothdemo.MsgHandler;
+import com.gcode.bluetooth.MsgHandler;
+import com.gcode.vasttools.helper.ContextHelper;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -31,9 +36,11 @@ public class AcceptThread extends Thread {
         BluetoothServerSocket tmp = null;
         try {
             // MY_UUID是应用程序的UUID，客户端代码使用相同的UUID
-            tmp = adapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
-        } catch (IOException e) {
-            Log.e(tag, "Socket's listen() method failed", e);
+            if (ActivityCompat.checkSelfPermission(ContextHelper.INSTANCE.getAppContext(), Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED) {
+                tmp = adapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         mmServerSocket = tmp;
     }
@@ -45,9 +52,9 @@ public class AcceptThread extends Thread {
             try {
                 msgHandler.sendEmptyMessage(Constant.MSG_START_LISTENING);
                 socket = mmServerSocket.accept();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 msgHandler.sendMessage(msgHandler.obtainMessage(Constant.MSG_ERROR, e));
-                Log.e(tag, "Socket's accept() method failed", e);
+                e.printStackTrace();
                 break;
             }
             // 如果一个连接被接受
